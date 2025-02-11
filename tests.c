@@ -1,8 +1,10 @@
-#include "cevent.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "assert.h"
 #include "string.h"
+
+#define CEVENT_IMPLEMENTATION
+#include "cevent.h"
 
 enum {
     OnMessage = 0,

@@ -7,14 +7,22 @@
 
 typedef struct {
     int eventType;
-    void (*callback)(int, void*);
+    void (*callback)(int,void*);
 } cevent_subscriber;
+
+typedef void (*cevent_callback)(int,void*);
+
+unsigned short cevent_subscribe(int eventType,cevent_callback cb);
+void cevent_publish(int eventType,void* payload);
+void cevent_unsubscribe(cevent_callback cb);
+
+#ifdef CEVENT_IMPLEMENTATION
 
 static cevent_subscriber subscribers[CEVENT_MAX_SUBSCRIBERS];
 static int subscriberCount = 0;
 
-inline unsigned short cevent_subscribe(int eventType, void (*callback)(int, void*)) {
-    if (subscriberCount >= CEVENT_MAX_SUBSCRIBERS) {
+unsigned short cevent_subscribe(int eventType,cevent_callback callback) {
+    if(subscriberCount >= CEVENT_MAX_SUBSCRIBERS) {
         return 0;
     }
     subscribers[subscriberCount].eventType = eventType;
@@ -23,18 +31,18 @@ inline unsigned short cevent_subscribe(int eventType, void (*callback)(int, void
     return 1;
 }
 
-inline void cevent_publish(int eventType, void* payload) {
-    for (int i = 0; i < subscriberCount; i++) {
-        if (subscribers[i].eventType == eventType) {
-            subscribers[i].callback(eventType, payload);
+void cevent_publish(int eventType,void* payload) {
+    for(int i = 0; i < subscriberCount; i++) {
+        if(subscribers[i].eventType == eventType) {
+            subscribers[i].callback(eventType,payload);
         }
     }
 }
 
-inline void cevent_unsubscribe(void (*callback)(int, void*)) {
-    for (int i = 0; i < subscriberCount; i++) {
-        if (subscribers[i].callback == callback) {
-            for (int j = i; j < subscriberCount - 1; j++) {
+void cevent_unsubscribe(cevent_callback callback) {
+    for(int i = 0; i < subscriberCount; i++) {
+        if(subscribers[i].callback == callback) {
+            for(int j = i; j < subscriberCount - 1; j++) {
                 subscribers[j] = subscribers[j + 1];
             }
             subscriberCount--;
@@ -43,4 +51,5 @@ inline void cevent_unsubscribe(void (*callback)(int, void*)) {
     }
 }
 
+#endif
 #endif
