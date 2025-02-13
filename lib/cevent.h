@@ -1,22 +1,39 @@
 ﻿#ifndef CEVENT_H
 #define CEVENT_H
 
-#ifndef CEVENT_MAX_SUBSCRIBERS
-#define CEVENT_MAX_SUBSCRIBERS 50
+typedef void (*cevent_callback)(int,void*);
+void cevent_publish(int eventType,void* payload);
+
+#ifdef CEVENT_IMPLEMENTATION
+
+#ifdef GLOBAL_EVENT_BUS_IMPL
+
+void cevent_setup(cevent_callback cb);
+static cevent_callback globalHandler;
+
+void cevent_setup(cevent_callback callback) {
+    globalHandler = callback;
+}
+
+void cevent_publish(int eventType,void* payload) {
+    globalHandler(eventType,payload);
+}
+
 #endif
+
+#ifndef GLOBAL_EVENT_BUS_IMPL
 
 typedef struct {
     int eventType;
     void (*callback)(int,void*);
 } cevent_subscriber;
 
-typedef void (*cevent_callback)(int,void*);
-
 unsigned short cevent_subscribe(int eventType,cevent_callback cb);
-void cevent_publish(int eventType,void* payload);
 void cevent_unsubscribe(cevent_callback cb);
 
-#ifdef CEVENT_IMPLEMENTATION
+#ifndef CEVENT_MAX_SUBSCRIBERS
+#define CEVENT_MAX_SUBSCRIBERS 50
+#endif
 
 static cevent_subscriber subscribers[CEVENT_MAX_SUBSCRIBERS];
 static int subscriberCount = 0;
@@ -50,6 +67,6 @@ void cevent_unsubscribe(cevent_callback callback) {
         }
     }
 }
-
+#endif
 #endif
 #endif

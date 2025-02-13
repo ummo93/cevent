@@ -82,3 +82,46 @@ int main(void) {
 }
 
 ```
+
+You can also turn Pub/Sub into Mediator if you don't need multiple subscribers and the place of processing all events will be global. For example:
+
+```c
+// events.h
+#ifndef CEVENT_EVENT_TYPES_H
+#define CEVENT_EVENT_TYPES_H
+
+enum {
+    SomeEvent = 0,
+    DifferentEvent
+} typedef EventType;
+
+#include "cevent.h"
+
+
+#define EmitGlobalEvent cevent_publish
+#define SetGlobalEventHandler cevent_setup
+
+#endif
+```
+
+And then:
+
+```c
+// main.c
+#define CEVENT_IMPLEMENTATION
+#define GLOBAL_EVENT_BUS_IMPL
+#include "events.h"
+#include "stdio.h"
+
+void handler(EventType event, void* omit) {
+    // Do something...
+}
+
+int main(void) {
+    SetGlobalEventHandler(handler);
+    //...
+    EmitGlobalEvent(DifferentEvent, NULL);
+    EmitGlobalEvent(SomeEvent, NULL);
+}
+
+```
